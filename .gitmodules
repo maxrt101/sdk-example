@@ -1,0 +1,4 @@
+[submodule "sdk"]
+	path = sdk
+	uel = git@github.com:maxrt101/sdk.git
+

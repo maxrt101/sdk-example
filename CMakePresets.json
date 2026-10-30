@@ -1,0 +1,22 @@
+{
+    "cmakeMinimumRequired": {
+        "major": 4,
+        "minor": 3,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "Host Debug",
+            "displayName": "Host - Debug",
+            "description": "Host Debug",
+            "cacheVariables": {
+                "TARGET": "host",
+                "CMAKE_BUILD_TYPE": "DEBUG"
+            },
+            "binaryDir": "${sourceDir}/build/host-debug",
+            "generator": "Unix Makefiles"
+        }
+    ],
+    "buildPresets": [],
+    "version": 3
+}
