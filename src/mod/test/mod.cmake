@@ -1,0 +1,3 @@
+mod_declare(${FEATURE_LOADER_DEFAULT_CONTAINER} test
+    ${CMAKE_CURRENT_LIST_DIR}/test.c
+)

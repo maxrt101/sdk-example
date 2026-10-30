@@ -13,7 +13,7 @@ features_declare(
 )
 
 project_declare(${PROJECT}
-    src/*.c
+    src/main.c
 )
 
 requires(
@@ -23,6 +23,7 @@ requires(
     tty
     shell
     log
+    loader
     async
 )
 
@@ -31,3 +32,5 @@ target_use(${TARGET})
 platform_use(common)
 
 project_finalize()
+
+include(src/mod/test/mod.cmake)

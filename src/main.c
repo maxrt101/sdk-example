@@ -7,6 +7,8 @@
 #include <tty.h>
 #include <shell.h>
 #include <log.h>
+#include <loader.h>
+#include <loader/export.h>
 #include <target.h>
 
 LOGGER_DECLARE(main);
@@ -110,6 +112,20 @@ static void echo() {
 }
 #endif
 
+#if has_module(loader)
+static uint8_t test_so_data[] = {
+#embed "test.so"
+};
+
+static loader_file_t test_so;
+
+void export_test() {
+  log_info("export_test called!");
+}
+
+EXPORT_SYMBOL(export_test);
+#endif
+
 static bool run = true;
 
 #if has_module(shell)
@@ -172,6 +188,28 @@ static int8_t sh_colortest(shell_t * sh, uint8_t argc, char ** argv) {
 }
 
 SHELL_CMD_DECLARE(colortest, sh_colortest, "color test", "ANSI Color Codes Test");
+
+static int8_t sh_modtest(shell_t * sh, uint8_t argc, char ** argv) {
+  const char * sym = "test_ret42";
+
+  if (argc) {
+    sym = argv[0];
+  }
+
+  int (*f)() = loader_file_symbol_lookup(&test_so, sym);
+
+  if (!f) {
+    tty_printf(sh->tty, "Symbol '%s' not found", sym);
+    return 1;
+  }
+
+  tty_printf(sh->tty, "fn=%p\n", f);
+  tty_printf(sh->tty, "fn()=%d\n", f());
+
+  return 0;
+}
+
+SHELL_CMD_DECLARE(modtest, sh_modtest, "mod test", "Loadable Module Test");
 #endif
 
 int main() {
@@ -180,8 +218,13 @@ int main() {
   log_info("Initialized");
   log_printf(LOG_DEBUG, "Raw log");
 
-  LDS_FOR_EACH(shell_cmd, cmd) {
-    tty_printf(&console_tty, "%s\r\n", cmd->name);
+  error_t err = loader_file_load(&test_so, (void*)test_so_data, sizeof(test_so_data));
+
+  if (err == E_OK) {
+    log_info("test.so module loaded");
+  } else {
+    log_error("Failed to load module test.so");
+    return 1;
   }
 
   shell_t sh;
@@ -195,14 +238,11 @@ int main() {
   uint32_t cycle = 0;
 
   while (run) {
-    // if (cycle % 5000000 == 0) {
-    //   tty_printf(&console_tty, "\rTest cycle %d\r\n", cycle);
-    // }
     shell_process(&sh);
     cycle++;
   }
 
-  //
+  loader_file_unload(&test_so);
 
   return 0;
 }
